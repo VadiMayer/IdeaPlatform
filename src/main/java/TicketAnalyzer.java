@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -39,13 +40,14 @@ public class TicketAnalyzer {
         for (Ticket ticket:ticketsInJava) {
             LocalDateTime departureTimeStamp = getTimeStamp(ticket.getDeparture_date(), ticket.getDeparture_time());
             LocalDateTime arrivalTimeStamp = getTimeStamp(ticket.getArrival_date(), ticket.getArrival_time());
-            long duration = arrivalTimeStamp.toEpochSecond() - departureTimeStamp;
+            Duration duration = Duration.between(arrivalTimeStamp, departureTimeStamp);
+
             if (minDurations.containsKey(ticket.getCarrier())) {
-                if (minDurations.get(ticket.getCarrier()) > duration) {
-                    minDurations.put(ticket.getCarrier(), duration);
+                if (minDurations.get(ticket.getCarrier()) > duration.toMinutes()) {
+                    minDurations.put(ticket.getCarrier(), duration.toMinutes());
                 }
             } else
-                minDurations.put(ticket.getCarrier(), duration);
+                minDurations.put(ticket.getCarrier(), duration.toMinutes());
 //            if(carrier.equals("TK")) {
 //                System.out.println("Минимальное время полета TK: " + duration);
 //            } else if(carrier.equals("S7")) {
