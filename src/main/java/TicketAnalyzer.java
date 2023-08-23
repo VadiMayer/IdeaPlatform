@@ -1,5 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ public class TicketAnalyzer {
         JSONParser parser = new JSONParser();
         JSONObject ticketsJson = null;
         HashMap<String, Long> minDurations = new HashMap<>();
+        List<Ticket> ticketsInJava = new ArrayList<>();
         try (FileReader reader = new FileReader("src/main/resources/tickets.json")) {
             reader.read();
             ticketsJson = (JSONObject) parser.parse(reader);
@@ -27,21 +30,29 @@ public class TicketAnalyzer {
             if (!(ticket.get("origin_name").equals("Владивосток"))) {
                 continue;
             }
-            String carrier = (String) ticket.get("carrier");
-            String departureTime = (String) ticket.get("departure_time");
-            String arrivalTime = (String) ticket.get("arrival_time");
-            long departureTimeStamp = getTimeStamp(departureTime);
-            long arrivalTimeStamp = getTimeStamp(arrivalTime);
-            long duration = arrivalTimeStamp - departureTimeStamp;
-            minDurations.put(carrier, duration);
-            minDurations.get(carrier).
+            ticketsInJava.add(new Ticket((String)ticket.get("origin_name"),
+                    (String)ticket.get("destination_name"), (LocalDate) ticket.get("departure_date"),
+                    (LocalTime) ticket.get("departure_time"), (LocalDate) ticket.get("arrival_date"),
+                    (LocalTime) ticket.get("arrival_time"), (String) ticket.get("carrier"),
+                    (int)ticket.get("price")));
+        }
+        for (Ticket ticket:ticketsInJava) {
+            LocalDateTime departureTimeStamp = getTimeStamp(ticket.getDeparture_date(), ticket.getDeparture_time());
+            LocalDateTime arrivalTimeStamp = getTimeStamp(ticket.getArrival_date(), ticket.getArrival_time());
+            long duration = arrivalTimeStamp.toEpochSecond() - departureTimeStamp;
+            if (minDurations.containsKey(ticket.getCarrier())) {
+                if (minDurations.get(ticket.getCarrier()) > duration) {
+                    minDurations.put(ticket.getCarrier(), duration);
+                }
+            } else
+                minDurations.put(ticket.getCarrier(), duration);
 //            if(carrier.equals("TK")) {
 //                System.out.println("Минимальное время полета TK: " + duration);
 //            } else if(carrier.equals("S7")) {
 //                System.out.println("Минимальное время полета S7: " + duration);
 //            }
 //            flightDurations.add(duration);
-            Integer price = ((Long)ticket.get("price")).intValue();
+            Integer price = ticket.getPrice();
             prices.add(price);
             double averagePrice = prices.stream().mapToInt(v -> v).average().orElse(0.0);
             int medianPrice = median(prices);
@@ -49,10 +60,8 @@ public class TicketAnalyzer {
             System.out.println("Разница между средней и медианой цены: " + diff);
         }
     }
-    public static long getTimeStamp(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime localTime = LocalTime.parse(time, formatter);
-        return localTime.toSecondOfDay() * 1000L;
+    public static LocalDateTime getTimeStamp(LocalDate date, LocalTime time) {
+        return LocalDateTime.of(date, time);
     }
     public static int median(List<Integer> list) {
         list.sort(Integer::compareTo);
