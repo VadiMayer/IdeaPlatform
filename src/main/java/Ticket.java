@@ -1,5 +1,6 @@
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 public class Ticket {
     private String origin_name;
@@ -84,5 +85,17 @@ public class Ticket {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ticket ticket = (Ticket) o;
+        return price == ticket.price && origin_name.equals(ticket.origin_name) && destination_name.equals(ticket.destination_name) && departure_date.equals(ticket.departure_date) && departure_time.equals(ticket.departure_time) && arrival_date.equals(ticket.arrival_date) && arrival_time.equals(ticket.arrival_time) && carrier.equals(ticket.carrier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(origin_name, destination_name, departure_date, departure_time, arrival_date, arrival_time, carrier, price);
     }
 }
