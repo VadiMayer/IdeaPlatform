@@ -29,7 +29,7 @@ public class TicketAnalyzer {
         List<Integer> prices = new ArrayList<>();
         for(Object ticketObj : tickets) {
             JSONObject ticket = (JSONObject) ticketObj;
-            if (!(ticket.get("origin_name").equals("Владивосток"))) {
+            if (!(ticket.get("origin_name").equals("Владивосток")) | !(ticket.get("destination_name").equals("Тель-Авив"))) {
                 continue;
             }
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy");
